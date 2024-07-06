@@ -1,0 +1,134 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const PNG = require('png-js');
+
+var XMLHttpRequest = require('xhr2');
+
+const img_path = process.argv[2] || '/tmp/eink.png';
+
+function decode(path) {
+  return new Promise(resolve => {
+    PNG.decode(path, response => resolve(response));
+  });
+}
+
+
+function getVal(data, i){
+	if((data[i]==0x00) && (data[i+1]==0x00))return 0;
+	if((data[i]==0xFF) && (data[i+1]==0xFF))return 1;
+	if((data[i]==0x7F) && (data[i+1]==0x7F))return 2;
+	return 3;
+}
+function byteToStr(v){return String.fromCharCode((v & 0xF) + 97, ((v >> 4) & 0xF) + 97);}
+function wordToStr(v){return byteToStr(v&0xFF) + byteToStr((v>>8)&0xFF);}
+function u_send(cmd,next)
+{
+	xhReq.open('POST',rqPrf+cmd, true);
+	xhReq.send('');
+	if(next)stInd++;
+	return 0;
+}
+function u_next()
+{
+	lnInd=0;
+	pxInd=0;
+	u_send('NEXT_',true);
+}
+function u_done()
+{
+	return u_send('SHOW_',true);
+}
+function u_show(a,k1,k2){var x=''+(k1+k2*pxInd/a.length);if(x.length>5)x=x.substring(0,5);return u_send(rqMsg+wordToStr(rqMsg.length)+'LOAD_',pxInd>=a.length);}
+function u_data(a,c,k1,k2)
+{
+	rqMsg='';
+	if(c==-1)
+	{
+		while((pxInd<a.length)&&(rqMsg.length<1000))
+		{
+			var v=0;
+			for (var i=0;i<16;i+=2)if(pxInd<a.length)v|=(a[pxInd++]<<i);
+			rqMsg += wordToStr(v);
+		}
+	}
+	else if(c==-2)
+	{
+		while((pxInd<a.length)&&(rqMsg.length<1000))
+		{
+			var v=0;
+			for (var i=0;i<16;i+=4)if(pxInd<a.length)v|=(a[pxInd++]<<i);
+			rqMsg += wordToStr(v);
+		}
+	}
+	else
+	{
+		while((pxInd<a.length)&&(rqMsg.length<1000))
+		{
+			var v=0;
+			for (var i=0;i<8;i++) if((pxInd<a.length)&&(a[pxInd++]!=c))v|=(128>>i);
+			rqMsg += byteToStr(v);
+		}
+	}
+	return u_show(a,k1,k2);}
+function u_line(a,c,k1,k2)
+{
+	var x;
+	rqMsg='';
+	while(rqMsg.length<1000)
+	{
+		x=0;
+		while(x<122)
+		{
+			var v=0;
+			for (var i=0;(i<8)&&(x<122);i++,x++) if(a[pxInd++]!=c)v|=(128>>i);
+			rqMsg += byteToStr(v);
+		}
+	}
+	return u_show(a,k1,k2);}
+function uploadImage(data, w, h)
+{
+    var a=new Array(w*h);
+    var i=0;
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++,i++) {
+        a[i]=getVal(data,i<<2);
+    }
+    dispX=0;
+    pxInd=0;
+    stInd=0;
+    xhReq=new XMLHttpRequest();
+    rqPrf='http://192.168.178.104/';
+    xhReq.onload=xhReq.onerror=function()
+    {
+        if(stInd==0)return u_data(a,0,0,100);
+        if(stInd==1)return u_done();
+    };
+    return u_send('EPDw_',false);
+
+    xhReq.onload=xhReq.onerror=function()
+    {
+        console.log('*************');
+        console.log(stInd);
+        console.log('*************');
+        if(stInd==0)return u_data(a,0,0,50);
+        if(stInd==1)return u_next();
+        if(stInd==2)return u_data(a,3,50,50);
+        if(stInd==3)return u_done();
+    };
+    return u_send('EPDw_',false);
+	
+}
+
+
+
+
+;(async () => {
+
+    var imagex = 800
+    var imagey = 480
+
+    let data = await decode(img_path);
+
+    uploadImage(data, imagex, imagey);
+
+})();

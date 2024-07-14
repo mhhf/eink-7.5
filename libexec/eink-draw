@@ -103,7 +103,7 @@ function uploadImage(data, w, h)
         if(stInd==0)return u_data(a,0,0,100);
         if(stInd==1)return u_done();
     };
-    return u_send('EPDw_',false);
+    return u_send('EPDx_',false);
 
     xhReq.onload=xhReq.onerror=function()
     {
@@ -115,7 +115,7 @@ function uploadImage(data, w, h)
         if(stInd==2)return u_data(a,3,50,50);
         if(stInd==3)return u_done();
     };
-    return u_send('EPDw_',false);
+    return u_send('EPDx_',false);
 	
 }
 

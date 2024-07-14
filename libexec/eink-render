@@ -68,6 +68,6 @@ cmd+=( -extent "800x480" /tmp/eink-resized.png )
 
    
 cmd2=( didder )
-cmd2+=( --palette "black white" -i /tmp/eink-resized.png -o /tmp/eink.png )
+cmd2+=( --palette "black white red" -i /tmp/eink-resized.png -o /tmp/eink.png )
 cmd2+=( ${didders[$style]} )
 "${cmd2[@]}"

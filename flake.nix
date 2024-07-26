@@ -101,21 +101,32 @@
               value = pkgs.lib.makeLibraryPath [pkgs.libuuid]; 
             }
           ];
-          commands = [
+          commands = let
+            inSrc = cmd : ''
+              cd "$PRJ_ROOT/src"
+              ${cmd}
+              (cd - >> /dev/null)
+            '';
+          in [
             {
               name = "monitor";
               help = "Monitor Arduino board";
-              command = "arduino-cli monitor -p $ARDUINO_PORT -b $ARDUINO_BOARD --config baudrate=$ARDUINO_BAUD";
+              command = inSrc "arduino-cli monitor -p $ARDUINO_PORT -b $ARDUINO_BOARD --config baudrate=$ARDUINO_BAUD";
+            }
+            {
+              name = "init";
+              help = "Initialize arduino-cli";
+              command = inSrc "arduino-cli core install esp32:esp32";
             }
             {
               name = "compile";
               help = "Compile Arduino sketch";
-              command = "arduino-cli compile -b $ARDUINO_BOARD";
+              command = inSrc "arduino-cli compile -b $ARDUINO_BOARD";
             }
             {
               name = "upload";
               help = "Upload Arduino sketch";
-              command = "arduino-cli upload -b $ARDUINO_BOARD -p $ARDUINO_PORT";
+              command = inSrc "arduino-cli upload -b $ARDUINO_BOARD -p $ARDUINO_PORT";
             }
           ];
           packages = with pkgs; [

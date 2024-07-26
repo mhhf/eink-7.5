@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+echo "eink: eink 7.5 controll script"
+echo ""
+echo "usage:"
+echo "  eink <image_file>: render the image and send it to the display"
+echo "  eink render [options] -i <input_image>: prepare and render an image to be shown on the eink device"
+echo "  eink draw [image_location]: sends the specified image to the display"
+echo "  eink styles [image_file]: generates examples of different rendering styles in /tmp/didder_tests"

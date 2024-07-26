@@ -22,12 +22,12 @@ This project provides a system for controlling an E-Ink display using an ESP32 c
 
 ## Firmware Setup
 
-1. Navigate to the `src` directory
-2. Modify the WiFi SSID, password, and static IP in `src/srvr.h`
-3. Use the provided Nix shell commands to compile and upload the firmware:
+1. Modify the WiFi SSID, password, and static IP in `src/srvr.h`
+2. Use the provided Nix shell commands to compile and upload the firmware:
 
 ```
 nix develop
+init # only needed once
 compile
 upload
 ```
